@@ -1,11 +1,13 @@
 import cv2
 import easyocr
 import re
-import nltk
 from nltk.corpus import words
-nltk.download('words')
 
+# Download the NLTK words corpus if you haven't already:
+# import nltk
+# nltk.download('words')
 
+# Create a set of valid English words for word prediction
 valid_words = set(words.words())
 
 def predict_word(input_letters):
@@ -26,7 +28,7 @@ def camera_ocr_and_save():
     # Set the confidence threshold for meaningful words (adjust as needed)
     confidence_threshold = 0.5
 
-    sentence = ""  # Initialize an empty sentence
+    recognized_words = []  # Initialize an empty list to store recognized words
 
     while True:
         # Capture a frame from the camera
@@ -53,7 +55,7 @@ def camera_ocr_and_save():
                     if confidence >= confidence_threshold and re.match(r'^[A-Za-z\s]+$', text):
                         text_file.write(text + '\n')
                         print("Recognized:", text)
-                        sentence += text  # Add recognized word to the sentence
+                        recognized_words.append(text)  # Add recognized word to the list
                     else:
                         # Attempt to predict a word based on the recognized letters
                         input_letters = ''.join([c for c in text if c.isalpha()])
@@ -62,15 +64,12 @@ def camera_ocr_and_save():
                             text_file.write(f"Predicted: {predicted_word}\n")
                             print(f"Predicted: {predicted_word}")
 
-                if sentence.strip():  # Check if the sentence is not empty
-                    text_file.write("Sentence: " + sentence.strip() + '\n')
-                    print("Sentence:", sentence.strip())
-
-                    # Write the sentence letter by letter
-                    for letter in sentence:
-                        text_file.write(letter + '\n')
-
-                    sentence = ""  # Reset the sentence
+                if recognized_words:  # Check if recognized words list is not empty
+                    # Create a sentence by joining recognized words
+                    sentence = ' '.join(recognized_words)
+                    text_file.write("Sentence: " + sentence + '\n')
+                    print("Sentence:", sentence)
+                    recognized_words = []  # Reset the recognized words list
 
         # Break the loop if the 'q' key is pressed
         elif key == ord('q'):
